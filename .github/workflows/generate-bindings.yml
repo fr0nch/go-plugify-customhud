@@ -1,4 +1,4 @@
-name: Check & Update Panorama API Bindings
+name: Check & Update Custom Hud API Bindings
 
 on:
   schedule:
