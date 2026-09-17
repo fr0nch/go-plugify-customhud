@@ -1,4 +1,4 @@
-package panorama_api
+package customhud
 
 /*
 #include "listeners.h"
@@ -22,7 +22,7 @@ var _ = runtime.GOOS
 var _ = unsafe.Sizeof(0)
 var _ = plugify.ApiVersion
 
-// Generated from panorama_api (group: listeners)
+// Generated from customhud (group: listeners)
 
 var _OnCsScriptReady_Register = func(callback OnCsScriptReadyCallback) {
 	__callback := plugify.GetFunctionPointerForDelegate(callback)

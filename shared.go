@@ -1,4 +1,4 @@
-package panorama_api
+package customhud
 
 import "runtime/debug"
 

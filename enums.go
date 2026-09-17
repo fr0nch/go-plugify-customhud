@@ -1,4 +1,4 @@
-package panorama_api
+package customhud
 
-// Generated from panorama_api
+// Generated from customhud
 

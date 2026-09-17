@@ -1,4 +1,4 @@
-package panorama_api
+package customhud
 
 /*
 #include "customhudlayout.h"
@@ -28,7 +28,7 @@ var _ = runtime.GOOS
 var _ = unsafe.Sizeof(0)
 var _ = plugify.ApiVersion
 
-// Generated from panorama_api (group: customhudlayout)
+// Generated from customhud (group: customhudlayout)
 
 var _IsCsScriptReady = func() bool {
 	__retVal := bool(C.IsCsScriptReady())

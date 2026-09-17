@@ -1,8 +1,8 @@
-package panorama_api
+package customhud
 
 import "github.com/untrustedmodders/go-plugify"
 
 var _ = plugify.ApiVersion
 
-// Generated from panorama_api
+// Generated from customhud
 

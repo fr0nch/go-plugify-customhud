@@ -1,10 +1,10 @@
-package panorama_api
+package customhud
 
 import "github.com/untrustedmodders/go-plugify"
 
 var _ = plugify.ApiVersion
 
-// Generated from panorama_api
+// Generated from customhud
 
 // OnCsScriptReadyCallback - CS Script has come up and is ready to use.
 type OnCsScriptReadyCallback func()
