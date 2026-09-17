@@ -1,4 +1,4 @@
-module github.com/fr0nch/go-plugify-panorama-api
+module github.com/fr0nch/go-plugify-customhud
 
 go 1.26.8
 
