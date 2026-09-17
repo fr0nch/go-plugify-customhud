@@ -26,9 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GO_PLUGIFY_REPO: untrustedmodders/go-plugify
-      PLUGIN_REPO: fr0nch/cs2-panorama-api
-      PLUGIN_NAME: cs2_panorama_api
-      PLUGIN_SHORT_NAME: panorama_api
+      PLUGIN_REPO: fr0nch/customhud
+      PLUGIN_NAME: customhud
+      PLUGIN_SHORT_NAME: customhud
     steps:
       - name: Checkout current repo
         uses: actions/checkout@v4
