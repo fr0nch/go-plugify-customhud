@@ -62,3 +62,15 @@ static bool IsHudInputCaptureEnabled(String* name, int32_t playerSlot) {
 	return __customhud_IsHudInputCaptureEnabled(name, playerSlot);
 }
 
+extern bool (*__customhud_ResetHud)(String*);
+
+static bool ResetHud(String* name) {
+	return __customhud_ResetHud(name);
+}
+
+extern bool (*__customhud_ResetHudForPlayer)(String*, int32_t);
+
+static bool ResetHudForPlayer(String* name, int32_t playerSlot) {
+	return __customhud_ResetHudForPlayer(name, playerSlot);
+}
+

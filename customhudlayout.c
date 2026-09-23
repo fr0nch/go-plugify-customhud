@@ -30,3 +30,9 @@ PLUGIFY_EXPORT bool (*__customhud_SetHudInputCapture)(String*, int32_t, bool) = 
 PLUGIFY_EXPORT bool (*__customhud_IsHudInputCaptureEnabled)(String*, int32_t) = NULL;
 
 
+PLUGIFY_EXPORT bool (*__customhud_ResetHud)(String*) = NULL;
+
+
+PLUGIFY_EXPORT bool (*__customhud_ResetHudForPlayer)(String*, int32_t) = NULL;
+
+

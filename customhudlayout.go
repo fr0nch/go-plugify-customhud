@@ -12,6 +12,8 @@ package customhud
 #cgo noescape SetHudDialogVariableForPlayer
 #cgo noescape SetHudInputCapture
 #cgo noescape IsHudInputCaptureEnabled
+#cgo noescape ResetHud
+#cgo noescape ResetHudForPlayer
 */
 import "C"
 import (
@@ -316,5 +318,57 @@ var _IsHudInputCaptureEnabled = func(name string, playerSlot int32) bool {
 //  @return False if the entity isn't found, CS Script isn't ready, or input isn't captured.
 func IsHudInputCaptureEnabled(name string, playerSlot int32) bool {
 	return _IsHudInputCaptureEnabled(name, playerSlot)
+}
+
+var _ResetHud = func(name string) bool {
+	var __retVal bool
+	__name := plugify.ConstructString(name)
+	plugify.Block {
+		Try: func() {
+			__retVal = bool(C.ResetHud((*C.String)(unsafe.Pointer(&__name))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__name)
+		},
+	}.Do()
+	return __retVal
+}
+
+// ResetHud 
+//  @brief Reset to original state for all players. (CustomHudLayout.Reset)
+//
+//  @param name: Name passed to CreateCustomHud.
+//
+//  @return False if the entity isn't found or CS Script isn't ready.
+func ResetHud(name string) bool {
+	return _ResetHud(name)
+}
+
+var _ResetHudForPlayer = func(name string, playerSlot int32) bool {
+	var __retVal bool
+	__name := plugify.ConstructString(name)
+	__playerSlot := C.int32_t(playerSlot)
+	plugify.Block {
+		Try: func() {
+			__retVal = bool(C.ResetHudForPlayer((*C.String)(unsafe.Pointer(&__name)), __playerSlot))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__name)
+		},
+	}.Do()
+	return __retVal
+}
+
+// ResetHudForPlayer 
+//  @brief Reset a single player's overrides to their original state. (CustomHudLayout.ResetForPlayer)
+//
+//  @param name: Name passed to CreateCustomHud.
+//  @param playerSlot: Player slot whose overrides are reset.
+//
+//  @return False if the entity isn't found or CS Script isn't ready.
+func ResetHudForPlayer(name string, playerSlot int32) bool {
+	return _ResetHudForPlayer(name, playerSlot)
 }
 
