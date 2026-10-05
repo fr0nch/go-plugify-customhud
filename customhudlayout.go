@@ -4,12 +4,18 @@ package customhud
 #include "customhudlayout.h"
 #cgo noescape IsCsScriptReady
 #cgo noescape CreateCustomHud
+#cgo noescape FindCustomHud
 #cgo noescape RemoveCustomHud
 #cgo noescape HideCustomHudFromOtherPlayers
 #cgo noescape SetHudHasClass
+#cgo noescape ResetHudHasClass
 #cgo noescape SetHudDialogVariable
 #cgo noescape SetHudHasClassForPlayer
+#cgo noescape ResetHudHasClassForPlayer
+#cgo noescape BHasClass
+#cgo noescape ToggleClass
 #cgo noescape SetHudDialogVariableForPlayer
+#cgo noescape ResetHudDialogVariableForPlayer
 #cgo noescape SetHudInputCapture
 #cgo noescape IsHudInputCaptureEnabled
 #cgo noescape ResetHud
@@ -46,13 +52,13 @@ func IsCsScriptReady() bool {
 	return _IsCsScriptReady()
 }
 
-var _CreateCustomHud = func(name string, layoutResource string) bool {
-	var __retVal bool
+var _CreateCustomHud = func(name string, layoutResource string) int32 {
+	var __retVal int32
 	__name := plugify.ConstructString(name)
 	__layoutResource := plugify.ConstructString(layoutResource)
 	plugify.Block {
 		Try: func() {
-			__retVal = bool(C.CreateCustomHud((*C.String)(unsafe.Pointer(&__name)), (*C.String)(unsafe.Pointer(&__layoutResource))))
+			__retVal = int32(C.CreateCustomHud((*C.String)(unsafe.Pointer(&__name)), (*C.String)(unsafe.Pointer(&__layoutResource))))
 		},
 		Finally: func() {
 			// Perform cleanup.
@@ -64,81 +70,89 @@ var _CreateCustomHud = func(name string, layoutResource string) bool {
 }
 
 // CreateCustomHud 
-//  @brief Creates a custom_hud_layout entity with the given Panorama layout. cs_script cannot spawn entities, so creation goes through s2sdk.
+//  @brief Creates a custom_hud_layout entity with the given Panorama layout and returns its handle. The handle is used for all further calls to this hud and stays valid until the hud is removed or the map changes. cs_script cannot spawn entities, so creation goes through s2sdk.
 //
-//  @param name: Name (targetname) used for all further calls to this hud.
+//  @param name: Name (targetname) of the hud. Does not have to be unique.
 //  @param layoutResource: Path to the Panorama layout (.xml), declared as a resource in the session manifest.
 //
-//  @return False if the engine doesn't know the custom_hud_layout class.
-func CreateCustomHud(name string, layoutResource string) bool {
+//  @return Hud handle, or -1 if the hud could not be created.
+func CreateCustomHud(name string, layoutResource string) int32 {
 	return _CreateCustomHud(name, layoutResource)
 }
 
-var _RemoveCustomHud = func(name string) bool {
-	var __retVal bool
+var _FindCustomHud = func(name string) int32 {
+	var __retVal int32
 	__name := plugify.ConstructString(name)
 	plugify.Block {
 		Try: func() {
-			__retVal = bool(C.RemoveCustomHud((*C.String)(unsafe.Pointer(&__name))))
+			__retVal = int32(C.FindCustomHud((*C.String)(unsafe.Pointer(&__name))))
 		},
 		Finally: func() {
 			// Perform cleanup.
 			plugify.DestroyString(&__name)
 		},
 	}.Do()
+	return __retVal
+}
+
+// FindCustomHud 
+//  @brief Gets the handle of the first hud with this name (targetname), such as a hud placed on the map.
+//
+//  @param name: The hud's targetname.
+//
+//  @return Hud handle, or -1 if there is no hud with this name.
+func FindCustomHud(name string) int32 {
+	return _FindCustomHud(name)
+}
+
+var _RemoveCustomHud = func(hud int32) bool {
+	var __retVal bool
+	__hud := C.int32_t(hud)
+	__retVal = bool(C.RemoveCustomHud(__hud))
 	return __retVal
 }
 
 // RemoveCustomHud 
-//  @brief Removes a previously created custom_hud_layout.
+//  @brief Removes a hud.
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //
-//  @return False if no hud with this name was created by this plugin.
-func RemoveCustomHud(name string) bool {
-	return _RemoveCustomHud(name)
+//  @return False if the handle isn't a hud.
+func RemoveCustomHud(hud int32) bool {
+	return _RemoveCustomHud(hud)
 }
 
-var _HideCustomHudFromOtherPlayers = func(name string, playerSlot int32) bool {
+var _HideCustomHudFromOtherPlayers = func(hud int32, playerSlot int32) bool {
 	var __retVal bool
-	__name := plugify.ConstructString(name)
+	__hud := C.int32_t(hud)
 	__playerSlot := C.int32_t(playerSlot)
-	plugify.Block {
-		Try: func() {
-			__retVal = bool(C.HideCustomHudFromOtherPlayers((*C.String)(unsafe.Pointer(&__name)), __playerSlot))
-		},
-		Finally: func() {
-			// Perform cleanup.
-			plugify.DestroyString(&__name)
-		},
-	}.Do()
+	__retVal = bool(C.HideCustomHudFromOtherPlayers(__hud, __playerSlot))
 	return __retVal
 }
 
 // HideCustomHudFromOtherPlayers 
-//  @brief Hides the hud entity from all players except the owner, at the transmit/PVS level — a stronger guarantee than a CSS class, which only hides the panel on clients the entity is still transmitted to. (s2sdk.HideTransmitEntityFromOtherPlayers)
+//  @brief Hides the hud entity from all players except the owner, at the transmit/PVS level. A stronger guarantee than a CSS class, which only hides the panel on clients the entity is still transmitted to. (s2sdk.HideTransmitEntityFromOtherPlayers)
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //  @param playerSlot: The owner player slot who will still see the entity.
 //
-//  @return False if no hud with this name was created by this plugin.
-func HideCustomHudFromOtherPlayers(name string, playerSlot int32) bool {
-	return _HideCustomHudFromOtherPlayers(name, playerSlot)
+//  @return False if the handle isn't a hud.
+func HideCustomHudFromOtherPlayers(hud int32, playerSlot int32) bool {
+	return _HideCustomHudFromOtherPlayers(hud, playerSlot)
 }
 
-var _SetHudHasClass = func(name string, panelId string, className string, hasClass bool) bool {
+var _SetHudHasClass = func(hud int32, panelId string, className string, hasClass bool) bool {
 	var __retVal bool
-	__name := plugify.ConstructString(name)
+	__hud := C.int32_t(hud)
 	__panelId := plugify.ConstructString(panelId)
 	__className := plugify.ConstructString(className)
 	__hasClass := C.bool(hasClass)
 	plugify.Block {
 		Try: func() {
-			__retVal = bool(C.SetHudHasClass((*C.String)(unsafe.Pointer(&__name)), (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__className)), __hasClass))
+			__retVal = bool(C.SetHudHasClass(__hud, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__className)), __hasClass))
 		},
 		Finally: func() {
 			// Perform cleanup.
-			plugify.DestroyString(&__name)
 			plugify.DestroyString(&__panelId)
 			plugify.DestroyString(&__className)
 		},
@@ -147,31 +161,60 @@ var _SetHudHasClass = func(name string, panelId string, className string, hasCla
 }
 
 // SetHudHasClass 
-//  @brief Set if a panel has a class. Applies to all players. Omit `hasClass` to revert to the original value. (CustomHudLayout.SetHasClass)
+//  @brief Set if a panel has a class. Applies to all players. (CustomHudLayout.SetHasClass)
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //  @param panelId: The panel's id attribute in the layout.
 //  @param className: CSS class.
 //  @param hasClass: True to add the class, false to remove it.
 //
-//  @return False if the entity isn't found or CS Script isn't ready.
-func SetHudHasClass(name string, panelId string, className string, hasClass bool) bool {
-	return _SetHudHasClass(name, panelId, className, hasClass)
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func SetHudHasClass(hud int32, panelId string, className string, hasClass bool) bool {
+	return _SetHudHasClass(hud, panelId, className, hasClass)
 }
 
-var _SetHudDialogVariable = func(name string, panelId string, variableName string, value string) bool {
+var _ResetHudHasClass = func(hud int32, panelId string, className string) bool {
 	var __retVal bool
-	__name := plugify.ConstructString(name)
+	__hud := C.int32_t(hud)
+	__panelId := plugify.ConstructString(panelId)
+	__className := plugify.ConstructString(className)
+	plugify.Block {
+		Try: func() {
+			__retVal = bool(C.ResetHudHasClass(__hud, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__className))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__panelId)
+			plugify.DestroyString(&__className)
+		},
+	}.Do()
+	return __retVal
+}
+
+// ResetHudHasClass 
+//  @brief Revert a panel's class to the original value from the layout. Applies to all players. (CustomHudLayout.SetHasClass without hasClass)
+//
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
+//  @param panelId: The panel's id attribute in the layout.
+//  @param className: CSS class.
+//
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func ResetHudHasClass(hud int32, panelId string, className string) bool {
+	return _ResetHudHasClass(hud, panelId, className)
+}
+
+var _SetHudDialogVariable = func(hud int32, panelId string, variableName string, value string) bool {
+	var __retVal bool
+	__hud := C.int32_t(hud)
 	__panelId := plugify.ConstructString(panelId)
 	__variableName := plugify.ConstructString(variableName)
 	__value := plugify.ConstructString(value)
 	plugify.Block {
 		Try: func() {
-			__retVal = bool(C.SetHudDialogVariable((*C.String)(unsafe.Pointer(&__name)), (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__variableName)), (*C.String)(unsafe.Pointer(&__value))))
+			__retVal = bool(C.SetHudDialogVariable(__hud, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__variableName)), (*C.String)(unsafe.Pointer(&__value))))
 		},
 		Finally: func() {
 			// Perform cleanup.
-			plugify.DestroyString(&__name)
 			plugify.DestroyString(&__panelId)
 			plugify.DestroyString(&__variableName)
 			plugify.DestroyString(&__value)
@@ -183,30 +226,29 @@ var _SetHudDialogVariable = func(name string, panelId string, variableName strin
 // SetHudDialogVariable 
 //  @brief Set the value of a dialog variable. Applies to all players. In the layout it's read as text="{s:variableName}". (CustomHudLayout.SetDialogVariableString)
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //  @param panelId: The panel's id attribute in the layout.
 //  @param variableName: Variable name.
 //  @param value: Value to display.
 //
-//  @return False if the entity isn't found or CS Script isn't ready.
-func SetHudDialogVariable(name string, panelId string, variableName string, value string) bool {
-	return _SetHudDialogVariable(name, panelId, variableName, value)
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func SetHudDialogVariable(hud int32, panelId string, variableName string, value string) bool {
+	return _SetHudDialogVariable(hud, panelId, variableName, value)
 }
 
-var _SetHudHasClassForPlayer = func(name string, playerSlot int32, panelId string, className string, hasClass bool) bool {
+var _SetHudHasClassForPlayer = func(hud int32, playerSlot int32, panelId string, className string, hasClass bool) bool {
 	var __retVal bool
-	__name := plugify.ConstructString(name)
+	__hud := C.int32_t(hud)
 	__playerSlot := C.int32_t(playerSlot)
 	__panelId := plugify.ConstructString(panelId)
 	__className := plugify.ConstructString(className)
 	__hasClass := C.bool(hasClass)
 	plugify.Block {
 		Try: func() {
-			__retVal = bool(C.SetHudHasClassForPlayer((*C.String)(unsafe.Pointer(&__name)), __playerSlot, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__className)), __hasClass))
+			__retVal = bool(C.SetHudHasClassForPlayer(__hud, __playerSlot, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__className)), __hasClass))
 		},
 		Finally: func() {
 			// Perform cleanup.
-			plugify.DestroyString(&__name)
 			plugify.DestroyString(&__panelId)
 			plugify.DestroyString(&__className)
 		},
@@ -215,33 +257,128 @@ var _SetHudHasClassForPlayer = func(name string, playerSlot int32, panelId strin
 }
 
 // SetHudHasClassForPlayer 
-//  @brief Set if a panel has a class for a single player. Will override the all player value. Omit `hasClass` to defer to the all player value. (CustomHudLayout.SetHasClassForPlayer)
+//  @brief Set if a panel has a class for a single player. Will override the all player value. (CustomHudLayout.SetHasClassForPlayer)
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //  @param playerSlot: Player slot the override applies to.
 //  @param panelId: The panel's id attribute in the layout.
 //  @param className: CSS class.
 //  @param hasClass: True to add the class, false to remove it.
 //
-//  @return False if the entity isn't found or CS Script isn't ready.
-func SetHudHasClassForPlayer(name string, playerSlot int32, panelId string, className string, hasClass bool) bool {
-	return _SetHudHasClassForPlayer(name, playerSlot, panelId, className, hasClass)
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func SetHudHasClassForPlayer(hud int32, playerSlot int32, panelId string, className string, hasClass bool) bool {
+	return _SetHudHasClassForPlayer(hud, playerSlot, panelId, className, hasClass)
 }
 
-var _SetHudDialogVariableForPlayer = func(name string, playerSlot int32, panelId string, variableName string, value string) bool {
+var _ResetHudHasClassForPlayer = func(hud int32, playerSlot int32, panelId string, className string) bool {
 	var __retVal bool
-	__name := plugify.ConstructString(name)
+	__hud := C.int32_t(hud)
+	__playerSlot := C.int32_t(playerSlot)
+	__panelId := plugify.ConstructString(panelId)
+	__className := plugify.ConstructString(className)
+	plugify.Block {
+		Try: func() {
+			__retVal = bool(C.ResetHudHasClassForPlayer(__hud, __playerSlot, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__className))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__panelId)
+			plugify.DestroyString(&__className)
+		},
+	}.Do()
+	return __retVal
+}
+
+// ResetHudHasClassForPlayer 
+//  @brief Remove a single player's value of a panel's class, so the all player value applies again. (CustomHudLayout.SetHasClassForPlayer without hasClass)
+//
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
+//  @param playerSlot: Player slot the override applies to.
+//  @param panelId: The panel's id attribute in the layout.
+//  @param className: CSS class.
+//
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func ResetHudHasClassForPlayer(hud int32, playerSlot int32, panelId string, className string) bool {
+	return _ResetHudHasClassForPlayer(hud, playerSlot, panelId, className)
+}
+
+var _BHasClass = func(hud int32, playerSlot int32, panelId string, className string) bool {
+	var __retVal bool
+	__hud := C.int32_t(hud)
+	__playerSlot := C.int32_t(playerSlot)
+	__panelId := plugify.ConstructString(panelId)
+	__className := plugify.ConstructString(className)
+	plugify.Block {
+		Try: func() {
+			__retVal = bool(C.BHasClass(__hud, __playerSlot, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__className))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__panelId)
+			plugify.DestroyString(&__className)
+		},
+	}.Do()
+	return __retVal
+}
+
+// BHasClass 
+//  @brief Get if a panel has a class for a player. The player value is used if set, otherwise the all player value. Classes from the layout file are not known to the server and are not reported. (Panel.BHasClass)
+//
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
+//  @param playerSlot: Player slot, or -1 for the all player value.
+//  @param panelId: The panel's id attribute in the layout.
+//  @param className: CSS class.
+//
+//  @return True if the class is set. False if it isn't, or the handle isn't a hud.
+func BHasClass(hud int32, playerSlot int32, panelId string, className string) bool {
+	return _BHasClass(hud, playerSlot, panelId, className)
+}
+
+var _ToggleClass = func(hud int32, playerSlot int32, panelId string, className string) bool {
+	var __retVal bool
+	__hud := C.int32_t(hud)
+	__playerSlot := C.int32_t(playerSlot)
+	__panelId := plugify.ConstructString(panelId)
+	__className := plugify.ConstructString(className)
+	plugify.Block {
+		Try: func() {
+			__retVal = bool(C.ToggleClass(__hud, __playerSlot, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__className))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__panelId)
+			plugify.DestroyString(&__className)
+		},
+	}.Do()
+	return __retVal
+}
+
+// ToggleClass 
+//  @brief Toggle a class on a panel, based on the value reported by BHasClass. Pass -1 for `playerSlot` to toggle the all player value. (Panel.ToggleClass)
+//
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
+//  @param playerSlot: Player slot, or -1 for the all player value.
+//  @param panelId: The panel's id attribute in the layout.
+//  @param className: CSS class.
+//
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func ToggleClass(hud int32, playerSlot int32, panelId string, className string) bool {
+	return _ToggleClass(hud, playerSlot, panelId, className)
+}
+
+var _SetHudDialogVariableForPlayer = func(hud int32, playerSlot int32, panelId string, variableName string, value string) bool {
+	var __retVal bool
+	__hud := C.int32_t(hud)
 	__playerSlot := C.int32_t(playerSlot)
 	__panelId := plugify.ConstructString(panelId)
 	__variableName := plugify.ConstructString(variableName)
 	__value := plugify.ConstructString(value)
 	plugify.Block {
 		Try: func() {
-			__retVal = bool(C.SetHudDialogVariableForPlayer((*C.String)(unsafe.Pointer(&__name)), __playerSlot, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__variableName)), (*C.String)(unsafe.Pointer(&__value))))
+			__retVal = bool(C.SetHudDialogVariableForPlayer(__hud, __playerSlot, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__variableName)), (*C.String)(unsafe.Pointer(&__value))))
 		},
 		Finally: func() {
 			// Perform cleanup.
-			plugify.DestroyString(&__name)
 			plugify.DestroyString(&__panelId)
 			plugify.DestroyString(&__variableName)
 			plugify.DestroyString(&__value)
@@ -251,124 +388,124 @@ var _SetHudDialogVariableForPlayer = func(name string, playerSlot int32, panelId
 }
 
 // SetHudDialogVariableForPlayer 
-//  @brief Set the value of a dialog variable for a single player. Will override the all player value. Omit `value` to defer to the all player value. If no all player value has been set, the value will be an empty string. (CustomHudLayout.SetDialogVariableStringForPlayer)
+//  @brief Set the value of a dialog variable for a single player. Will override the all player value. (CustomHudLayout.SetDialogVariableStringForPlayer)
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //  @param playerSlot: Player slot the override applies to.
 //  @param panelId: The panel's id attribute in the layout.
 //  @param variableName: Variable name.
 //  @param value: Value to display.
 //
-//  @return False if the entity isn't found or CS Script isn't ready.
-func SetHudDialogVariableForPlayer(name string, playerSlot int32, panelId string, variableName string, value string) bool {
-	return _SetHudDialogVariableForPlayer(name, playerSlot, panelId, variableName, value)
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func SetHudDialogVariableForPlayer(hud int32, playerSlot int32, panelId string, variableName string, value string) bool {
+	return _SetHudDialogVariableForPlayer(hud, playerSlot, panelId, variableName, value)
 }
 
-var _SetHudInputCapture = func(name string, playerSlot int32, enabled bool) bool {
+var _ResetHudDialogVariableForPlayer = func(hud int32, playerSlot int32, panelId string, variableName string) bool {
 	var __retVal bool
-	__name := plugify.ConstructString(name)
+	__hud := C.int32_t(hud)
 	__playerSlot := C.int32_t(playerSlot)
-	__enabled := C.bool(enabled)
+	__panelId := plugify.ConstructString(panelId)
+	__variableName := plugify.ConstructString(variableName)
 	plugify.Block {
 		Try: func() {
-			__retVal = bool(C.SetHudInputCapture((*C.String)(unsafe.Pointer(&__name)), __playerSlot, __enabled))
+			__retVal = bool(C.ResetHudDialogVariableForPlayer(__hud, __playerSlot, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__variableName))))
 		},
 		Finally: func() {
 			// Perform cleanup.
-			plugify.DestroyString(&__name)
+			plugify.DestroyString(&__panelId)
+			plugify.DestroyString(&__variableName)
 		},
 	}.Do()
+	return __retVal
+}
+
+// ResetHudDialogVariableForPlayer 
+//  @brief Remove a single player's value of a dialog variable, so the all player value applies again. If no all player value has been set, the value will be an empty string. (CustomHudLayout.SetDialogVariableStringForPlayer without value)
+//
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
+//  @param playerSlot: Player slot the override applies to.
+//  @param panelId: The panel's id attribute in the layout.
+//  @param variableName: Variable name.
+//
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func ResetHudDialogVariableForPlayer(hud int32, playerSlot int32, panelId string, variableName string) bool {
+	return _ResetHudDialogVariableForPlayer(hud, playerSlot, panelId, variableName)
+}
+
+var _SetHudInputCapture = func(hud int32, playerSlot int32, enabled bool) bool {
+	var __retVal bool
+	__hud := C.int32_t(hud)
+	__playerSlot := C.int32_t(playerSlot)
+	__enabled := C.bool(enabled)
+	__retVal = bool(C.SetHudInputCapture(__hud, __playerSlot, __enabled))
 	return __retVal
 }
 
 // SetHudInputCapture 
 //  @brief Set to true to force a player into cursor mode and enable click detection on the panels of this hud. Set a callback with OnHudClicked_Register to listen for clicks. Multiple huds can have input captured at a time. Players will get movement control back once all huds have disabled input capture. (CustomHudLayout.SetInputCaptureEnabled)
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //  @param playerSlot: Player slot.
 //  @param enabled: True to capture input, false to release control.
 //
-//  @return False if the entity isn't found or CS Script isn't ready.
-func SetHudInputCapture(name string, playerSlot int32, enabled bool) bool {
-	return _SetHudInputCapture(name, playerSlot, enabled)
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func SetHudInputCapture(hud int32, playerSlot int32, enabled bool) bool {
+	return _SetHudInputCapture(hud, playerSlot, enabled)
 }
 
-var _IsHudInputCaptureEnabled = func(name string, playerSlot int32) bool {
+var _IsHudInputCaptureEnabled = func(hud int32, playerSlot int32) bool {
 	var __retVal bool
-	__name := plugify.ConstructString(name)
+	__hud := C.int32_t(hud)
 	__playerSlot := C.int32_t(playerSlot)
-	plugify.Block {
-		Try: func() {
-			__retVal = bool(C.IsHudInputCaptureEnabled((*C.String)(unsafe.Pointer(&__name)), __playerSlot))
-		},
-		Finally: func() {
-			// Perform cleanup.
-			plugify.DestroyString(&__name)
-		},
-	}.Do()
+	__retVal = bool(C.IsHudInputCaptureEnabled(__hud, __playerSlot))
 	return __retVal
 }
 
 // IsHudInputCaptureEnabled 
 //  @brief Get if this hud is capturing input for a player. (CustomHudLayout.IsInputCaptureEnabled)
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //  @param playerSlot: Player slot.
 //
-//  @return False if the entity isn't found, CS Script isn't ready, or input isn't captured.
-func IsHudInputCaptureEnabled(name string, playerSlot int32) bool {
-	return _IsHudInputCaptureEnabled(name, playerSlot)
+//  @return False if input isn't captured, the handle isn't a hud, CS Script isn't ready or the call failed.
+func IsHudInputCaptureEnabled(hud int32, playerSlot int32) bool {
+	return _IsHudInputCaptureEnabled(hud, playerSlot)
 }
 
-var _ResetHud = func(name string) bool {
+var _ResetHud = func(hud int32) bool {
 	var __retVal bool
-	__name := plugify.ConstructString(name)
-	plugify.Block {
-		Try: func() {
-			__retVal = bool(C.ResetHud((*C.String)(unsafe.Pointer(&__name))))
-		},
-		Finally: func() {
-			// Perform cleanup.
-			plugify.DestroyString(&__name)
-		},
-	}.Do()
+	__hud := C.int32_t(hud)
+	__retVal = bool(C.ResetHud(__hud))
 	return __retVal
 }
 
 // ResetHud 
 //  @brief Reset to original state for all players. (CustomHudLayout.Reset)
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //
-//  @return False if the entity isn't found or CS Script isn't ready.
-func ResetHud(name string) bool {
-	return _ResetHud(name)
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func ResetHud(hud int32) bool {
+	return _ResetHud(hud)
 }
 
-var _ResetHudForPlayer = func(name string, playerSlot int32) bool {
+var _ResetHudForPlayer = func(hud int32, playerSlot int32) bool {
 	var __retVal bool
-	__name := plugify.ConstructString(name)
+	__hud := C.int32_t(hud)
 	__playerSlot := C.int32_t(playerSlot)
-	plugify.Block {
-		Try: func() {
-			__retVal = bool(C.ResetHudForPlayer((*C.String)(unsafe.Pointer(&__name)), __playerSlot))
-		},
-		Finally: func() {
-			// Perform cleanup.
-			plugify.DestroyString(&__name)
-		},
-	}.Do()
+	__retVal = bool(C.ResetHudForPlayer(__hud, __playerSlot))
 	return __retVal
 }
 
 // ResetHudForPlayer 
 //  @brief Reset a single player's overrides to their original state. (CustomHudLayout.ResetForPlayer)
 //
-//  @param name: Name passed to CreateCustomHud.
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //  @param playerSlot: Player slot whose overrides are reset.
 //
-//  @return False if the entity isn't found or CS Script isn't ready.
-func ResetHudForPlayer(name string, playerSlot int32) bool {
-	return _ResetHudForPlayer(name, playerSlot)
+//  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
+func ResetHudForPlayer(hud int32, playerSlot int32) bool {
+	return _ResetHudForPlayer(hud, playerSlot)
 }
 

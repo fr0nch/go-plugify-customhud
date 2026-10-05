@@ -11,6 +11,6 @@ type OnCsScriptReadyCallback func()
 
 
 // OnHudClickedCallback - A hud button click. Called when a button in a CustomHudLayout is clicked.
-type OnHudClickedCallback func(playerSlot int32, name string, buttonId string)
+type OnHudClickedCallback func(playerSlot int32, hud int32, buttonId string)
 
 

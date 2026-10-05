@@ -56,7 +56,7 @@ var _OnHudClicked_Register = func(callback OnHudClickedCallback) {
 }
 
 // OnHudClicked_Register 
-//  @brief Subscribes to button clicks on all huds created via CreateCustomHud. Replaces a separate cs_script relay and ServerCommand: the click arrives directly in this plugin through Instance.OnCustomHudClicked.
+//  @brief Subscribes to button clicks on all huds. Replaces a separate cs_script relay and ServerCommand: the click arrives directly in this plugin through Instance.OnCustomHudClicked.
 //
 //  @param callback: Called on every click.
 func OnHudClicked_Register(callback OnHudClickedCallback) {
