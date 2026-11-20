@@ -6,6 +6,9 @@ PLUGIFY_EXPORT bool (*__customhud_IsCsScriptReady)() = NULL;
 PLUGIFY_EXPORT int32_t (*__customhud_CreateCustomHud)(String*, String*) = NULL;
 
 
+PLUGIFY_EXPORT int32_t (*__customhud_CreateObservableCustomHud)(String*, String*) = NULL;
+
+
 PLUGIFY_EXPORT int32_t (*__customhud_FindCustomHud)(String*) = NULL;
 
 
@@ -13,6 +16,12 @@ PLUGIFY_EXPORT bool (*__customhud_RemoveCustomHud)(int32_t) = NULL;
 
 
 PLUGIFY_EXPORT bool (*__customhud_HideCustomHudFromOtherPlayers)(int32_t, int32_t) = NULL;
+
+
+PLUGIFY_EXPORT bool (*__customhud_HideCustomHud)(int32_t, int32_t) = NULL;
+
+
+PLUGIFY_EXPORT bool (*__customhud_ShowCustomHud)(int32_t, int32_t) = NULL;
 
 
 PLUGIFY_EXPORT bool (*__customhud_SetHudHasClass)(int32_t, String*, String*, bool) = NULL;
@@ -40,6 +49,9 @@ PLUGIFY_EXPORT bool (*__customhud_SetHudDialogVariableForPlayer)(int32_t, int32_
 
 
 PLUGIFY_EXPORT bool (*__customhud_ResetHudDialogVariableForPlayer)(int32_t, int32_t, String*, String*) = NULL;
+
+
+PLUGIFY_EXPORT String (*__customhud_GetHudDialogVariable)(int32_t, int32_t, String*, String*) = NULL;
 
 
 PLUGIFY_EXPORT bool (*__customhud_SetHudInputCapture)(int32_t, int32_t, bool) = NULL;

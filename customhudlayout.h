@@ -14,6 +14,12 @@ static int32_t CreateCustomHud(String* name, String* layoutResource) {
 	return __customhud_CreateCustomHud(name, layoutResource);
 }
 
+extern int32_t (*__customhud_CreateObservableCustomHud)(String*, String*);
+
+static int32_t CreateObservableCustomHud(String* name, String* layoutResource) {
+	return __customhud_CreateObservableCustomHud(name, layoutResource);
+}
+
 extern int32_t (*__customhud_FindCustomHud)(String*);
 
 static int32_t FindCustomHud(String* name) {
@@ -30,6 +36,18 @@ extern bool (*__customhud_HideCustomHudFromOtherPlayers)(int32_t, int32_t);
 
 static bool HideCustomHudFromOtherPlayers(int32_t hud, int32_t playerSlot) {
 	return __customhud_HideCustomHudFromOtherPlayers(hud, playerSlot);
+}
+
+extern bool (*__customhud_HideCustomHud)(int32_t, int32_t);
+
+static bool HideCustomHud(int32_t hud, int32_t playerSlot) {
+	return __customhud_HideCustomHud(hud, playerSlot);
+}
+
+extern bool (*__customhud_ShowCustomHud)(int32_t, int32_t);
+
+static bool ShowCustomHud(int32_t hud, int32_t playerSlot) {
+	return __customhud_ShowCustomHud(hud, playerSlot);
 }
 
 extern bool (*__customhud_SetHudHasClass)(int32_t, String*, String*, bool);
@@ -84,6 +102,12 @@ extern bool (*__customhud_ResetHudDialogVariableForPlayer)(int32_t, int32_t, Str
 
 static bool ResetHudDialogVariableForPlayer(int32_t hud, int32_t playerSlot, String* panelId, String* variableName) {
 	return __customhud_ResetHudDialogVariableForPlayer(hud, playerSlot, panelId, variableName);
+}
+
+extern String (*__customhud_GetHudDialogVariable)(int32_t, int32_t, String*, String*);
+
+static String GetHudDialogVariable(int32_t hud, int32_t playerSlot, String* panelId, String* variableName) {
+	return __customhud_GetHudDialogVariable(hud, playerSlot, panelId, variableName);
 }
 
 extern bool (*__customhud_SetHudInputCapture)(int32_t, int32_t, bool);

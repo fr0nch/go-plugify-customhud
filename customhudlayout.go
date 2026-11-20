@@ -4,9 +4,12 @@ package customhud
 #include "customhudlayout.h"
 #cgo noescape IsCsScriptReady
 #cgo noescape CreateCustomHud
+#cgo noescape CreateObservableCustomHud
 #cgo noescape FindCustomHud
 #cgo noescape RemoveCustomHud
 #cgo noescape HideCustomHudFromOtherPlayers
+#cgo noescape HideCustomHud
+#cgo noescape ShowCustomHud
 #cgo noescape SetHudHasClass
 #cgo noescape ResetHudHasClass
 #cgo noescape SetHudDialogVariable
@@ -16,6 +19,7 @@ package customhud
 #cgo noescape ToggleClass
 #cgo noescape SetHudDialogVariableForPlayer
 #cgo noescape ResetHudDialogVariableForPlayer
+#cgo noescape GetHudDialogVariable
 #cgo noescape SetHudInputCapture
 #cgo noescape IsHudInputCaptureEnabled
 #cgo noescape ResetHud
@@ -80,6 +84,34 @@ func CreateCustomHud(name string, layoutResource string) int32 {
 	return _CreateCustomHud(name, layoutResource)
 }
 
+var _CreateObservableCustomHud = func(name string, layoutResource string) int32 {
+	var __retVal int32
+	__name := plugify.ConstructString(name)
+	__layoutResource := plugify.ConstructString(layoutResource)
+	plugify.Block {
+		Try: func() {
+			__retVal = int32(C.CreateObservableCustomHud((*C.String)(unsafe.Pointer(&__name)), (*C.String)(unsafe.Pointer(&__layoutResource))))
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__name)
+			plugify.DestroyString(&__layoutResource)
+		},
+	}.Do()
+	return __retVal
+}
+
+// CreateObservableCustomHud 
+//  @brief Same as CreateCustomHud, but the hud is observable: every player receives the per-player state of all players, and a spectator sees the hud of the player being observed (without a cursor). A regular hud sends per-player state only to that player.
+//
+//  @param name: Name (targetname) of the hud. Does not have to be unique.
+//  @param layoutResource: Path to the Panorama layout (.xml), declared as a resource in the session manifest.
+//
+//  @return Hud handle, or -1 if the hud could not be created.
+func CreateObservableCustomHud(name string, layoutResource string) int32 {
+	return _CreateObservableCustomHud(name, layoutResource)
+}
+
 var _FindCustomHud = func(name string) int32 {
 	var __retVal int32
 	__name := plugify.ConstructString(name)
@@ -131,7 +163,7 @@ var _HideCustomHudFromOtherPlayers = func(hud int32, playerSlot int32) bool {
 }
 
 // HideCustomHudFromOtherPlayers 
-//  @brief Hides the hud entity from all players except the owner, at the transmit/PVS level. A stronger guarantee than a CSS class, which only hides the panel on clients the entity is still transmitted to. (s2sdk.HideTransmitEntityFromOtherPlayers)
+//  @brief Hides the hud entity from all players except the owner, at the transmit level. Works only for players who haven't received the hud yet, so call it in the same tick as CreateCustomHud; a hud already on a player's screen stays there and stops updating. s2sdk clears every hide on round start. (s2sdk.HideTransmitEntityFromOtherPlayers)
 //
 //  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
 //  @param playerSlot: The owner player slot who will still see the entity.
@@ -139,6 +171,44 @@ var _HideCustomHudFromOtherPlayers = func(hud int32, playerSlot int32) bool {
 //  @return False if the handle isn't a hud.
 func HideCustomHudFromOtherPlayers(hud int32, playerSlot int32) bool {
 	return _HideCustomHudFromOtherPlayers(hud, playerSlot)
+}
+
+var _HideCustomHud = func(hud int32, playerSlot int32) bool {
+	var __retVal bool
+	__hud := C.int32_t(hud)
+	__playerSlot := C.int32_t(playerSlot)
+	__retVal = bool(C.HideCustomHud(__hud, __playerSlot))
+	return __retVal
+}
+
+// HideCustomHud 
+//  @brief Stops transmitting the hud entity to one player until ShowCustomHud. Works only if the player hasn't received the hud yet, so call it in the same tick as CreateCustomHud; a hud already on the player's screen stays there and stops updating. s2sdk clears every hide on round start. (s2sdk.HideTransmitEntity)
+//
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
+//  @param playerSlot: The player who stops receiving the hud.
+//
+//  @return False if the handle isn't a hud.
+func HideCustomHud(hud int32, playerSlot int32) bool {
+	return _HideCustomHud(hud, playerSlot)
+}
+
+var _ShowCustomHud = func(hud int32, playerSlot int32) bool {
+	var __retVal bool
+	__hud := C.int32_t(hud)
+	__playerSlot := C.int32_t(playerSlot)
+	__retVal = bool(C.ShowCustomHud(__hud, __playerSlot))
+	return __retVal
+}
+
+// ShowCustomHud 
+//  @brief Transmits the hud entity to a player again after HideCustomHud or HideCustomHudFromOtherPlayers; a frozen hud starts updating again. (s2sdk.ShowTransmitEntity)
+//
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
+//  @param playerSlot: The player who receives the hud again.
+//
+//  @return False if the handle isn't a hud.
+func ShowCustomHud(hud int32, playerSlot int32) bool {
+	return _ShowCustomHud(hud, playerSlot)
 }
 
 var _SetHudHasClass = func(hud int32, panelId string, className string, hasClass bool) bool {
@@ -431,6 +501,43 @@ var _ResetHudDialogVariableForPlayer = func(hud int32, playerSlot int32, panelId
 //  @return False if the handle isn't a hud, CS Script isn't ready or the call failed.
 func ResetHudDialogVariableForPlayer(hud int32, playerSlot int32, panelId string, variableName string) bool {
 	return _ResetHudDialogVariableForPlayer(hud, playerSlot, panelId, variableName)
+}
+
+var _GetHudDialogVariable = func(hud int32, playerSlot int32, panelId string, variableName string) string {
+	var __retVal string
+	var __retVal_native plugify.PlgString
+	__hud := C.int32_t(hud)
+	__playerSlot := C.int32_t(playerSlot)
+	__panelId := plugify.ConstructString(panelId)
+	__variableName := plugify.ConstructString(variableName)
+	plugify.Block {
+		Try: func() {
+			__native := C.GetHudDialogVariable(__hud, __playerSlot, (*C.String)(unsafe.Pointer(&__panelId)), (*C.String)(unsafe.Pointer(&__variableName)))
+			__retVal_native = *(*plugify.PlgString)(unsafe.Pointer(&__native))
+			// Unmarshal - Convert native data to managed data.
+			__retVal = plugify.GetStringData[string](&__retVal_native)
+		},
+		Finally: func() {
+			// Perform cleanup.
+			plugify.DestroyString(&__retVal_native)
+			plugify.DestroyString(&__panelId)
+			plugify.DestroyString(&__variableName)
+		},
+	}.Do()
+	return __retVal
+}
+
+// GetHudDialogVariable 
+//  @brief Gets the value of a dialog variable for a player. The player value is used if set, otherwise the all player value. Only values set from the server are known; variables set by the layout itself are not reported.
+//
+//  @param hud: Hud handle from CreateCustomHud or FindCustomHud.
+//  @param playerSlot: Player slot, or -1 for the all player value.
+//  @param panelId: The panel's id attribute in the layout.
+//  @param variableName: Dialog variable name, without braces.
+//
+//  @return The value, or an empty string if it isn't set or the handle isn't a hud.
+func GetHudDialogVariable(hud int32, playerSlot int32, panelId string, variableName string) string {
+	return _GetHudDialogVariable(hud, playerSlot, panelId, variableName)
 }
 
 var _SetHudInputCapture = func(hud int32, playerSlot int32, enabled bool) bool {
